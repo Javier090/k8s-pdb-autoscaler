@@ -91,6 +91,9 @@ func main() {
 		tlsOpts = append(tlsOpts, disableHTTP2)
 	}
 
+	//hmmm I didn't realize the webhook actually ran in process with the controller.
+	//theortically if you only ever ran once intance you don't need the crd to communicate between them
+	// you can just do it in memory. But thats probably bad coupling and mkes it so you can never scale out your web hook.
 	webhookServer := webhook.NewServer(webhook.Options{
 		TLSOpts: tlsOpts,
 	})
@@ -105,7 +108,7 @@ func main() {
 		WebhookServer:          webhookServer,
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
-		LeaderElectionID:       "d482b936.mydomain.com",
+		LeaderElectionID:       "d482b936.mydomain.com", //fun random generated. can add pdb watcher in here.
 		// LeaderElectionReleaseOnCancel defines if the leader should step down voluntarily
 		// when the Manager ends. This requires the binary to immediately end when the
 		// Manager is stopped, otherwise, this setting is unsafe. Setting this significantly
@@ -123,6 +126,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	//I am forgetting where you register the types you want to watch.
 	if err = (&controllers.PDBWatcherReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),

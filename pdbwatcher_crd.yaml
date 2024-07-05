@@ -3,6 +3,8 @@ kind: CustomResourceDefinition
 metadata:
   name: pdbwatchers.apps.mydomain.com
 spec:
+  #going to learn this as I learn the code but might be interesting to say who creates this CR. 
+  # Does you controller create one for every pdb? Or does user create one
   group: apps.mydomain.com
   names:
     kind: PDBWatcher
@@ -24,18 +26,21 @@ spec:
                 pdbName:
                   type: string
                   description: "The name of the Pod Disruption Budget to watch."
+                #mentioned before what happens if there are multiple deployments creating pods selcected by pdb?
+                #you could have the user set it manually in htat case and auto select in the case there is a single erroring if user doesn't set and there are multiple.
                 deploymentName:
                   type: string
                   description: "The name of the Deployment to scale."
+                #this could all be status because they're learned from the deployment
                 scaleFactor:
                   type: integer
                   description: "The number by which to scale the Deployment."
                   minimum: 1
-                minReplicas:
+                minReplicas: #maps to deployments original replica count)
                   type: integer
                   description: "The minimum number of replicas to maintain."
                   minimum: 1
-                maxReplicas:
+                maxReplicas: #maps to deploymetns orgiianl + max surge 
                   type: integer
                   description: "The maximum number of replicas to maintain."
                   minimum: 1
@@ -51,6 +56,7 @@ spec:
                 currentReplicas:
                   type: integer
                   description: "The current number of replicas of the Deployment."
+                #this is just a mirror of pdb status. Since controller is wathcing both could just keep that in memory
                 disruptionsAllowed:
                   type: integer
                   description: "The current number of disruptions allowed for the PDB."
@@ -63,6 +69,7 @@ spec:
                         type: string
                       evictionTime:
                         type: string
+                      #how is status used?
                       status:
                         type: string
               required:

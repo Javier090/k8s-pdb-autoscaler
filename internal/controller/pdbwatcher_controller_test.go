@@ -134,6 +134,8 @@ var _ = Describe("PDBWatcher Controller", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(*deployment.Spec.Replicas).To(Equal(int32(2))) // Change as needed to verify scaling
 		})
+
+		//reconcile can be called any time pdb watcher is changed so you'll want another test to show we dont scale. when theres not a recent eviction.
 	})
 })
 

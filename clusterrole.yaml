@@ -6,15 +6,21 @@ rules:
 - apiGroups: ["apps.mydomain.com"]
   resources: ["pdbwatchers"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+# was consdiring if we should have a mode wher we just make pdbs for every deployment. Makes it easier to test?
 - apiGroups: ["policy"]
   resources: ["poddisruptionbudgets"]
   verbs: ["get", "list", "watch"]
+#seems you need acces to replica sets too?
 - apiGroups: ["apps"]
-  resources: ["deployments"]
+  resources: ["deployments"]  
   verbs: ["get", "list", "watch", "update"]
+#forget if this can be restricted to just your namespace or not. oh well not very improtant. 
 - apiGroups: ["coordination.k8s.io"]
   resources: ["leases"]
   verbs: ["get", "list", "watch", "create", "update"]
+#why do we need to watch pods? guess I will find out when i get to the code. 
+#ah you're listing pods to find their owner based on the selector in the pdb.  Can remove the watch....
+#keep in mind that there are orders of magnitude more pods than the other resources here so this can be expensive. 
 - apiGroups: [""]
   resources: ["pods"]
   verbs: ["get", "list", "watch"]
