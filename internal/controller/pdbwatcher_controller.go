@@ -29,6 +29,7 @@ type PDBWatcherReconciler struct {
 // +kubebuilder:rbac:groups=apps.mydomain.com,resources=pdbwatchers/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=apps.mydomain.com,resources=pdbwatchers/finalizers,verbs=update
 
+// this will only get called when the pdb watcher updates. Watching deployment (and PDB) still a todo?
 func (r *PDBWatcherReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 
@@ -43,6 +44,7 @@ func (r *PDBWatcherReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	// Fetch the PDB
+	// FOr now you (the developer) adn manually setting the pdb on the spec right? (As opposed to automatically making oe of these for every pdb)
 	pdb := &policyv1.PodDisruptionBudget{}
 	err = r.Get(ctx, types.NamespacedName{Name: pdbWatcher.Spec.PDBName, Namespace: pdbWatcher.Namespace}, pdb)
 	if err != nil {
@@ -82,10 +84,14 @@ func (r *PDBWatcherReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	if len(deploymentMap) > 1 {
+		//ideally you want to event on your watcher here so user can see it.
+		//should we also event if there are no pods owned by deployments?
 		return ctrl.Result{}, fmt.Errorf("PDB %s/%s overlaps with multiple deployments", pdbWatcher.Namespace, pdbWatcher.Spec.PDBName)
 	}
 
 	// Fetch the Deployment
+	// see comments in crd whats the intention of putting deployment in spec. if its optional it could override what you find in
+	// deploymentMap.
 	deploymentName := pdbWatcher.Spec.DeploymentName
 	if len(deploymentMap) == 1 {
 		for name := range deploymentMap {
@@ -103,9 +109,11 @@ func (r *PDBWatcherReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	if pdb.Status.DisruptionsAllowed == 0 {
 		// Scale up the Deployment
 		newReplicas := *deployment.Spec.Replicas + pdbWatcher.Spec.ScaleFactor
+		// ideally want to use deployments max surge here rathr than duplicaing into pdb watcher
 		if newReplicas > pdbWatcher.Spec.MaxReplicas {
 			newReplicas = pdbWatcher.Spec.MaxReplicas
 		}
+		// I don't think you want to do this unless theres recent evictions. Otherwise anyone touching your pdb watcher resource will scale it up.
 		deployment.Spec.Replicas = &newReplicas
 		err = r.Update(ctx, deployment)
 		if err != nil {
@@ -126,7 +134,7 @@ func (r *PDBWatcherReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 			}
 
 			// Check if the eviction was recent (within the last 5 minutes)
-			if time.Since(evictionTime) < 5*time.Minute {
+			if time.Since(evictionTime) < 5*time.Minute { //make this configurable?
 				logger.Info(fmt.Sprintf("Recent eviction for Pod %s at %s", log.PodName, log.EvictionTime))
 			}
 		}
@@ -139,6 +147,7 @@ func (r *PDBWatcherReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 			return ctrl.Result{}, err
 		}
 	}
+	// What will return us to orginal. state. Assuming we need a watch on pdb for it to come off
 
 	return ctrl.Result{}, nil
 }

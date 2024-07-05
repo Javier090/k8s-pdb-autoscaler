@@ -6,6 +6,7 @@ metadata:
 spec:
   pdbName: example-pdbwatcher
   deploymentName: example-pdbwatcher
+  #strange for you to set these since they should come from deployment.
   scaleFactor: 1
   minReplicas: 1
   maxReplicas: 10

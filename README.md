@@ -7,6 +7,10 @@
 ## Project Overview
 This project aims to create a Kubernetes controller that watches Pod Disruption Budgets (PDBs) and Deployments, alongside a webhook that monitors pod eviction requests initiated by a client, logs them, and communicates them back to the controller. The controller will dynamically adjust resources in response to the constraints by the PDB during disruptions.
 
+## flow diagram
+
+This is a good place to talk/show how webhook -> crd <-> controller communcations works. 
+
 ## Project Objectives
 
 ### 1. Monitor PDBs and Pod Evictions

@@ -70,6 +70,7 @@ spec:
           capabilities:
             drop:
             - "ALL"
+        #wonder what the default health endpoint  does in kube builder
         livenessProbe:
           httpGet:
             path: /healthz
