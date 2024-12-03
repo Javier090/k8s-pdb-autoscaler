@@ -12,7 +12,14 @@ rules:
   - get
   - list
   - update
-  - watch
+- apiGroups:
+  - apps
+  resources:
+  - statefulsets
+  verbs:
+  - get
+  - list
+  - update
 - apiGroups:
   - apps.mydomain.com
   resources:
@@ -40,10 +47,16 @@ rules:
   - patch
   - update
 - apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+- apiGroups:
   - policy
   resources:
   - poddisruptionbudgets
   verbs:
   - get
   - list
-  - watch
